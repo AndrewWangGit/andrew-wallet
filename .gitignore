@@ -1,0 +1,6 @@
+auth/node_modules
+auth/package-lock.json
+wallet/artifacts
+wallet/cache
+wallet/node_modules
+wallet/package-lock.json
