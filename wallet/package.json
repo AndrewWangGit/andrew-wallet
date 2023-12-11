@@ -9,7 +9,8 @@
     "deployWallet": "npx hardhat run scripts/deployWallet.js",
     "sendUserOp": "node scripts/sendUserOp.js",
     "getSignature": "node scripts/getSignature.js",
-    "getUserOpHash": "node scripts/getUserOpHash.js"
+    "getUserOpHash": "node scripts/getUserOpHash.js",
+    "registerAccount": "node scripts/registerAccount.js"
   },
   "keywords": [],
   "author": "",
