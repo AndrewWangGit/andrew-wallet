@@ -4,4 +4,5 @@ wallet/artifacts
 wallet/cache
 wallet/node_modules
 wallet/package-lock.json
+wallet/typechain
 .DS_Store
