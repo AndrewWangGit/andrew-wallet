@@ -5,7 +5,6 @@ pragma solidity ^0.8.12;
 /* solhint-disable no-inline-assembly */
 /* solhint-disable reason-string */
 
-import "@openzeppelin/contracts/utils/cryptography/ECDSA.sol";
 import "@openzeppelin/contracts/proxy/utils/Initializable.sol";
 import "@openzeppelin/contracts/proxy/utils/UUPSUpgradeable.sol";
 import "@openzeppelin/contracts/utils/Base64.sol";
@@ -13,24 +12,22 @@ import "@openzeppelin/contracts/utils/Base64.sol";
 import "../core/BaseAccount.sol";
 import "./callback/TokenCallbackHandler.sol";
 
-import "hardhat/console.sol";
-
 /**
  * minimal account.
  *  this is sample minimal account.
  *  has execute, eth handling methods
  *  has a single signer that can send requests through the entryPoint.
  */
-contract SimpleAccount is
+contract GoogleAccount is
     BaseAccount,
     TokenCallbackHandler,
     UUPSUpgradeable,
     Initializable
 {
-    using ECDSA for bytes32;
-
-    address public owner = 0xd0DD317b0943Cc19A738881a349859Cd4370f8D8;
-    string public username = "andrew";
+    address public owner;
+    string public aud =
+        "629075145814-0il5ad9dgklad6olnla10nebnqc5n2uj.apps.googleusercontent.com";
+    string public email = "andrew.tj.wang@gmail.com";
 
     IEntryPoint private immutable _entryPoint;
 
@@ -130,12 +127,7 @@ contract SimpleAccount is
         UserOperation calldata userOp,
         bytes32 userOpHash
     ) internal virtual override returns (uint256 validationData) {
-        bytes memory message = abi.encode(userOpHash, username);
-        bytes32 hashedMessage = keccak256(message);
-        bytes32 hash = hashedMessage.toEthSignedMessageHash();
-        if (owner != hash.recover(userOp.signature))
-            return SIG_VALIDATION_FAILED;
-        return 0;
+        return SIG_VALIDATION_FAILED;
     }
 
     function _call(address target, uint256 value, bytes memory data) internal {
