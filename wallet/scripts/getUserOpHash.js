@@ -1,17 +1,20 @@
 const ethers = require("ethers");
 
-const sender = "";
+const sender = "0x2294AE33083c0Db9f9f30E43F6710F04E2903476";
 const nonce = 0;
-const hashInitCode = ethers.keccak256("0x");
-const hashCallData = ethers.keccak256(
-  "0xb61d27f60000000000000000000000000be71941d041a32fe7df4a61eb2fcff3b03502c0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000600000000000000000000000000000000000000000000000000000000000000004d087d28800000000000000000000000000000000000000000000000000000000"
-);
-const callGasLimit = 0x30d40;
-const verificationGasLimit = 0x30d40;
-const preVerificationGas = 0x30d40;
-const maxFeePerGas = 0x30d40;
-const maxPriorityFeePerGas = 0x30d40;
-const hashPaymasterAndData = ethers.keccak256("0x");
+const initCode = "0x";
+const callData =
+  "0xb61d27f60000000000000000000000000be71941d041a32fe7df4a61eb2fcff3b03502c0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000600000000000000000000000000000000000000000000000000000000000000004d087d28800000000000000000000000000000000000000000000000000000000";
+const callGasLimit = 0x4C4B40;
+const verificationGasLimit = 0x4C4B40;
+const preVerificationGas = 0x4C4B40;
+const maxFeePerGas = 0x4C4B40;
+const maxPriorityFeePerGas = 0x4C4B40;
+const paymasterAndData = "0x";
+
+const hashInitCode = ethers.keccak256(initCode);
+const hashCallData = ethers.keccak256(callData);
+const hashPaymasterAndData = ethers.keccak256(paymasterAndData);
 
 const abi = ethers.AbiCoder.defaultAbiCoder();
 const packed = abi.encode(

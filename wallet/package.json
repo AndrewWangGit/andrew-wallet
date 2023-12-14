@@ -7,8 +7,10 @@
     "compile": "npx hardhat clean && npx hardhat compile",
     "flatten": "npx hardhat flatten contracts/samples/SimpleAccount.sol > flattened/SimpleAccountFlattened.sol",
     "deployWallet": "npx hardhat run scripts/deployWallet.js",
+    "deployWalletGoogle": "npx hardhat run scripts/deployWalletGoogle.js",
     "sendUserOp": "node scripts/sendUserOp.js",
     "getSignature": "node scripts/getSignature.js",
+    "getSignatureGoogle": "node scripts/getSignatureGoogle.js",
     "getUserOpHash": "node scripts/getUserOpHash.js",
     "registerAccount": "node scripts/registerAccount.js"
   },
@@ -44,6 +46,7 @@
     "@typechain/ethers-v6": "^0.5.1",
     "@typechain/hardhat": "^2.3.0",
     "@types/mocha": "^9.0.0",
+    "base64url": "^3.0.1",
     "ethereumjs-util": "^7.1.0",
     "ethereumjs-wallet": "^1.0.1",
     "hardhat-deploy": "^0.11.23",

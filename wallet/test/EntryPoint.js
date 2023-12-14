@@ -1,20 +1,30 @@
+const {
+  time,
+  loadFixture,
+} = require("@nomicfoundation/hardhat-toolbox/network-helpers");
+const { anyValue } = require("@nomicfoundation/hardhat-chai-matchers/withArgs");
 const { expect } = require("chai");
-// const { ethers } = require("hardhat");
+const hre = require("hardhat");
 
-describe("Generate userOpHash", function () {
-  it("Passing through a UserOperation should return a hash of that object", async function () {
-    const simpleAccount = await ethers.deployContract("SimpleAccount", [
+describe("Base64 Test", function () {
+  async function deployContract() {
+    // Contracts are deployed using the first signer/account by default
+    const [owner, otherAccount] = await ethers.getSigners();
+    const googleAccount = await ethers.deployContract("GoogleAccount", [
       "0x5FF137D4b0FDCD49DcA30c7CF57E578a026d2789",
     ]);
 
-    await simpleAccount.testVerification(
-      "0x2898b2b8bec0ebd5280231b4d21b8f0c213e1303f10fd617cf52ffdd47ca29c7"
-    );
+    return { googleAccount, owner, otherAccount };
+  }
 
-    // expect(
-    //   await simpleAccount.testVerification(
-    //     "0x2898b2b8bec0ebd5280231b4d21b8f0c213e1303f10fd617cf52ffdd47ca29c7"
-    //   )
-    // ).to.equal(true);
+  describe("JSON Parsing", function () {
+    it("Should parse the payload correctly", async function () {
+      const { googleAccount } = await deployContract();
+      const JSON_String =
+        '{"iss":"accounts.google.com","azp":"629075145814-0il5ad9dgklad6olnla10nebnqc5n2uj.apps.googleusercontent.com","aud":"629075145814-0il5ad9dgklad6olnla10nebnqc5n2uj.apps.googleusercontent.com","sub":"104755661141364739555","email":"andrew.tj.wang@gmail.com","email_verified":true,"at_hash":"KTVUBvrseQXA0mv7X2YwLg","nonce":"0x7f25b329b8c3e93768910f11144df663f6f3bc66930f844b4ca071fa66f0936b","iat":1702425819,"exp":1702429419}';
+      expect(await googleAccount.runParseToken(JSON_String)).to.equal(
+        "something else"
+      );
+    });
   });
 });

@@ -7,10 +7,12 @@ pragma solidity ^0.8.12;
 
 import "@openzeppelin/contracts/proxy/utils/Initializable.sol";
 import "@openzeppelin/contracts/proxy/utils/UUPSUpgradeable.sol";
-import "@openzeppelin/contracts/utils/Base64.sol";
+// import "@openzeppelin/contracts/utils/Base64.sol";
 
 import "../core/BaseAccount.sol";
 import "./callback/TokenCallbackHandler.sol";
+import "../utils/Base64.sol";
+import "../utils/JsmnSolLib.sol";
 
 /**
  * minimal account.
@@ -24,6 +26,8 @@ contract GoogleAccount is
     UUPSUpgradeable,
     Initializable
 {
+    using JsmnSolLib for string;
+
     address public owner;
     string public aud =
         "629075145814-0il5ad9dgklad6olnla10nebnqc5n2uj.apps.googleusercontent.com";
@@ -127,7 +131,57 @@ contract GoogleAccount is
         UserOperation calldata userOp,
         bytes32 userOpHash
     ) internal virtual override returns (uint256 validationData) {
-        return SIG_VALIDATION_FAILED;
+        (
+            string memory payloadJson,
+            bytes memory _data,
+            bytes memory _m,
+            bytes memory _e,
+            bytes memory _s
+        ) = abi.decode(userOp.signature, (string, bytes, bytes, bytes, bytes));
+
+        bool sigValid = pkcs1Sha256Raw(_data, _s, _e, _m);
+        if (!sigValid) return SIG_VALIDATION_FAILED;
+
+        (
+            string memory _aud,
+            string memory _nonce,
+            string memory _email
+        ) = parsePayload(payloadJson);
+
+        bytes memory userOpHashBytes = bytes32ToBytes(userOpHash);
+        string memory userOpHashString = iToHex(userOpHashBytes);
+
+        if (
+            _aud.strCompare(aud) != 0 ||
+            _email.strCompare(email) != 0 ||
+            _nonce.strCompare(userOpHashString) != 0
+        ) {
+            return SIG_VALIDATION_FAILED;
+        }
+
+        return 0;
+    }
+
+    function iToHex(bytes memory buffer) public pure returns (string memory) {
+        // Fixed buffer size for hexadecimal convertion
+        bytes memory converted = new bytes(buffer.length * 2);
+
+        bytes memory _base = "0123456789abcdef";
+
+        for (uint256 i = 0; i < buffer.length; i++) {
+            converted[i * 2] = _base[uint8(buffer[i]) / _base.length];
+            converted[i * 2 + 1] = _base[uint8(buffer[i]) % _base.length];
+        }
+
+        return string(abi.encodePacked("0x", converted));
+    }
+
+    function bytes32ToBytes(bytes32 _data) public pure returns (bytes memory) {
+        bytes memory byteArray = new bytes(32);
+        for (uint i = 0; i < 32; i++) {
+            byteArray[i] = _data[i];
+        }
+        return byteArray;
     }
 
     function _call(address target, uint256 value, bytes memory data) internal {
@@ -233,7 +287,8 @@ contract GoogleAccount is
         assembly {
             pop(
                 staticcall(
-                    sub(gas(), 2000),
+                    // sub(gas(), 2000),
+                    200000,
                     5,
                     add(input, 0x20),
                     inputlen,
@@ -337,5 +392,50 @@ contract GoogleAccount is
         bytes memory _m
     ) public view returns (bool) {
         return pkcs1Sha256(sha256(_data), _s, _e, _m);
+    }
+
+    function parsePayload(
+        string memory json
+    )
+        internal
+        pure
+        returns (string memory _aud, string memory _nonce, string memory _email)
+    {
+        (uint exitCode, JsmnSolLib.Token[] memory tokens, uint ntokens) = json
+            .parse(40);
+        require(exitCode == 0, "JSON parse failed");
+
+        require(
+            tokens[0].jsmnType == JsmnSolLib.JsmnType.OBJECT,
+            "Expected JWT to be an object"
+        );
+        uint i = 1;
+        while (i < ntokens) {
+            require(
+                tokens[i].jsmnType == JsmnSolLib.JsmnType.STRING,
+                "Expected JWT to contain only string keys"
+            );
+            string memory key = json.getBytes(tokens[i].start, tokens[i].end);
+            if (key.strCompare("aud") == 0) {
+                require(
+                    tokens[i + 1].jsmnType == JsmnSolLib.JsmnType.STRING,
+                    "Expected aud to be a string"
+                );
+                _aud = json.getBytes(tokens[i + 1].start, tokens[i + 1].end);
+            } else if (key.strCompare("nonce") == 0) {
+                require(
+                    tokens[i + 1].jsmnType == JsmnSolLib.JsmnType.STRING,
+                    "Expected nonce to be a string"
+                );
+                _nonce = json.getBytes(tokens[i + 1].start, tokens[i + 1].end);
+            } else if (key.strCompare("email") == 0) {
+                require(
+                    tokens[i + 1].jsmnType == JsmnSolLib.JsmnType.STRING,
+                    "Expected email to be a string"
+                );
+                _email = json.getBytes(tokens[i + 1].start, tokens[i + 1].end);
+            }
+            i += 2;
+        }
     }
 }
